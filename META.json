@@ -1,0 +1,49 @@
+{
+   "abstract" : "Communicate with the various Epicor E4SE web services.",
+   "author" : [
+      "Chase Whitener <cwhitener@gmail.com>"
+   ],
+   "dynamic_config" : 1,
+   "generated_by" : "ExtUtils::MakeMaker version 6.68, CPAN::Meta::Converter version 2.131560",
+   "license" : [
+      "unknown"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "WebService-E4SE",
+   "no_index" : {
+      "directory" : [
+         "t",
+         "inc"
+      ]
+   },
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "Test::More" : "0"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Authen::NTLM" : "1",
+            "HTTP::Headers" : "6",
+            "HTTP::Request" : "6",
+            "LWP::UserAgent" : "6",
+            "Moose" : "2",
+            "MooseX::Types::Moose" : "0.2",
+            "URI" : "1.6",
+            "XML::LibXML::Simple" : "2",
+            "perl" : "5.006"
+         }
+      }
+   },
+   "release_status" : "stable",
+   "version" : "0.01"
+}
