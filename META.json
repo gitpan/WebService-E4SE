@@ -4,7 +4,7 @@
       "Chase Whitener <cwhitener@gmail.com>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "ExtUtils::MakeMaker version 6.68, CPAN::Meta::Converter version 2.131560",
+   "generated_by" : "ExtUtils::MakeMaker version 6.84, CPAN::Meta::Converter version 2.133380",
    "license" : [
       "unknown"
    ],
@@ -16,13 +16,16 @@
    "no_index" : {
       "directory" : [
          "t",
-         "inc"
+         "inc",
+         "t"
       ]
    },
    "prereqs" : {
       "build" : {
          "requires" : {
-            "Test::More" : "0"
+            "Test::More" : "0",
+            "Test::Pod" : "0",
+            "Test::Pod::Coverage" : "0"
          }
       },
       "configure" : {
@@ -39,11 +42,25 @@
             "Moose" : "2",
             "MooseX::Types::Moose" : "0.2",
             "URI" : "1.6",
-            "XML::LibXML::Simple" : "2",
-            "perl" : "5.006"
+            "XML::Compile::SOAP" : "2.38",
+            "XML::Compile::WSDL11" : "2.38",
+            "XML::LibXML" : "1.94",
+            "perl" : "5.010001"
          }
       }
    },
    "release_status" : "stable",
-   "version" : "0.01"
+   "resources" : {
+      "bugtracker" : {
+         "web" : "http://github.com/genio/webservice-e4se/issues"
+      },
+      "homepage" : "http://cwhitener.com",
+      "license" : [
+         "http://www.opensource.org/licenses/artistic-license-2.0"
+      ],
+      "repository" : {
+         "url" : "http://github.com/genio/webservice-e4se"
+      }
+   },
+   "version" : "0.02"
 }

@@ -4,18 +4,19 @@ use 5.006;
 use Moose;
 use MooseX::Types::Moose qw/Bool HashRef/;
 use Carp;
-use URI 1.60;
+
+use Authen::NTLM 1.09;
 use LWP::UserAgent 6.02;
 use HTTP::Headers;
 use HTTP::Request;
-use Authen::NTLM;
-use XML::LibXML::Simple;
+use URI 1.60;
+use XML::Compile::SOAP11 2.38;
+use XML::Compile::SOAP11::Client;
 use XML::Compile::WSDL11;
-use XML::Compile::SOAP11;
 use XML::Compile::Transport::SOAPHTTP;
-use namespace::autoclean;
+use XML::LibXML;
 
-use Data::Dumper;
+use namespace::autoclean;
 
 =head1 NAME
 
@@ -23,17 +24,18 @@ WebService::E4SE - Communicate with the various Epicor E4SE web services.
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
 our $AUTHORITY = 'cpan:CAPOEIRAB';
-our $VERSION = '0.01';
-
+our $VERSION = '0.02';
+#$Carp::Verbose = 1;
 has useragent => (
 	is => 'ro',
 	isa => 'LWP::UserAgent',
 	required => 1,
+	init_arg => undef,
 	default => sub {
 		my $lwp = LWP::UserAgent->new( keep_alive=>1 )
 	}
@@ -55,21 +57,21 @@ has username => (
 
 has password => (
 	is => 'rw',
-	isa => 'Maybe[Str]',
+	isa => 'Str',
 	required => 1,
 	default => '',
 );
 
 has realm => (
 	is => 'rw',
-	isa => 'Maybe[Str]',
+	isa => 'Str',
 	required => 1,
 	default => '',
 );
 
 has site => (
 	is => 'rw',
-	isa => 'Maybe[Str]',
+	isa => 'Str',
 	required => 1,
 	default => 'epicor:80',
 );
@@ -87,6 +89,8 @@ has wsdl => (
 	is => 'rw',
 	isa => 'HashRef[XML::Compile::WSDL11]',
 	required => 0,
+	init_arg => undef,
+	lazy => 1,
 	default => sub { {} },
 );
 
@@ -101,8 +105,11 @@ has files => (
 	is => 'ro',
 	isa => 'ArrayRef[Str]',
 	required => 1,
+	lazy => 1,
+	init_arg => undef,
 	default => sub {[
 		'ActionCall.asmx',
+		'Attachment.asmx',
 		'BackOfficeAP.asmx',
 		'BackOfficeAR.asmx',
 		'BackOfficeCFG.asmx',
@@ -162,6 +169,7 @@ has files => (
 		'Site.asmx',
 		'Supplier.asmx',
 		'svActionCall.asmx',
+		'svAttachment.asmx',
 		'svBackOfficeAP.asmx',
 		'svBackOfficeAR.asmx',
 		'svBackOfficeCFG.asmx',
@@ -259,7 +267,7 @@ sub _valid_file {
 
 sub _wsdl {
 	my ( $self, $file ) = @_;
-	my $wsdl = $self->wsdl;
+	my $wsdl = $self->wsdl();
 	#if our wsdl is already setup, let's just return
 	return 1 if ( exists($wsdl->{$file}) && defined($wsdl->{$file}) );
 
@@ -267,23 +275,26 @@ sub _wsdl {
 	$self->useragent->credentials( $self->site, $self->realm, $self->username, $self->password );
 	$self->useragent->timeout($self->timeout);
 
-	my $port = $self->_get_port($file);
 	my $res = $self->useragent->get($self->base_url . '/'. $file . '?WSDL' );
 	unless ( $res->is_success ) {
-		warn "Unable to setup WSDL: ".$res->status_line();
+		Carp::carp( "Unable to setup WSDL: ".$res->status_line() );
 		return 0;
 	}
 	$wsdl->{$file} = XML::Compile::WSDL11->new( $res->decoded_content );
 	unless ( $wsdl->{$file} ) {
-		warn "Unable to create new XML::Compile::WSDL11 object";
+		Carp::carp( "Unable to create new XML::Compile::WSDL11 object" );
 		return 0;
 	}
 	my $trans = XML::Compile::Transport::SOAPHTTP->new(
 		user_agent=> $self->useragent,
 		address => $self->base_url.'/'. $file,
 	);
+	unless ( $trans ) {
+		Carp::carp( "Unable to create new XML::Compile::Transport::SOAPHTTP object" );
+		return 0;
+	}
 	$wsdl->{$file}->compileCalls(
-		port => $port,
+		port => $self->_get_port($file),
 		transport => $trans,
 	);
 	return 1;
@@ -350,10 +361,11 @@ Here's some sample code:
 
 =head2 new( %params )
 
-The constructor will give you a new WebService::E4SE object.  The parameters passed to it are all listed below.  They have defaults
-and since this is a L<Moose> object, you can set each one individually as well with $ws->param_name($foo).
+The constructor will give you a new WebService::E4SE object.  The parameters passed to it are all listed below.  They have defaults and since this is a L<Moose> object, you can set each one individually as well by using the parameter name as a method call.
 
-=head3 parameters
+=over
+
+=item parameters
 
 =over
 
@@ -363,8 +375,7 @@ Default is an empty string.  Usually, you need to prefix this with the domain yo
 
 =item password
 
-Default is an empty string.  This will be your domain password.  No attempt to hide this is made as E4SE cannot function over SSL anyway, why should
-I bother trying to make you feel secure when you're not.
+Default is an empty string.  This will be your domain password.  No attempt to hide this is made as E4SE cannot function over SSL anyway, why should I bother trying to make you feel secure when you're not.
 
 =item realm
 
@@ -384,16 +395,17 @@ Default is 30.  This is passed to L<LWP::UserAgent> to handle how long you want 
 
 =back
 
+=back
+
 =head2 files()
 
-This method will return a reference to an array file names that this web service has knowledge of for an E4SE installation.
+This method will return a reference to an array of file names that this web service has knowledge of for an E4SE installation.
 
   my $files = $ws->files;  # 'ActionCall.asmx', 'Company.asmx', 'Resource.asmx', etc....
 
 =head2 call( $file, $function, %parameters )
 
-This method will call an API method for the file you want.  It will return 0 and warn on errors outside of L<XML::Compile::WSDL11>'s knowledge, otherwise
-it's just a little wrapper around L<XML::Compile::WSDL11>->call();
+This method will call an API method for the file you want.  It will return 0 and warn on errors outside of L<XML::Compile::WSDL11>'s knowledge, otherwise it's just a little wrapper around L<XML::Compile::WSDL11>->call();
 
 Another way to do this would be $ws->get_object('Reource.asmx')->call( $function, %params );
 
@@ -426,15 +438,19 @@ This property is defaulted to false (0).  If set to true, the next call to a met
 go out to the server and re-grab the WSDL and re-setup that WSDL object no matter if we have already generated it or not.  The property will
 be reset to false directly after the next WSDL object setup.
 
+=head2 operations( $file )
+
+This method will return a list of  L<XML::Compile::SOAP::Operation> objects that are available for the given file.
+
 =cut
 
 sub call {
 	my ( $self, $file, $function, %parameters ) = @_;
 	unless ( $self->_valid_file($file) ) {
-		warn "$file is not a valid web service found in E4SE.";
+		Carp::carp( "$file is not a valid web service found in E4SE." );
 		return 0;
 	}
-	my $wsdl = $self->wsdl;
+	my $wsdl = $self->wsdl();
 	if ( $self->force_wsdl_reload() ) {
 		delete($wsdl->{$file}) if exists($wsdl->{$file});
 		$self->force_wsdl_reload(0);
@@ -447,7 +463,7 @@ sub call {
 sub get_object {
 	my ( $self, $file ) = @_;
 	unless ( $self->_valid_file($file) ) {
-		warn "$file is not a valid web service found in E4SE.";
+		Carp::carp( "$file is not a valid web service found in E4SE." );
 		return 0;
 	}
 	my $wsdl = $self->wsdl;
@@ -462,19 +478,17 @@ sub get_object {
 sub operations {
 	my ( $self, $file ) = @_;
 	unless ( $self->_valid_file($file) ) {
-		warn "$file is not a valid web service found in E4SE.";
+		Carp::carp( "$file is not a valid web service found in E4SE." );
 		return [];
 	}
-	my $port = $self->_get_port($file); # could be done with a regex, but might as well normalize it
-	my $wsdl = $self->wsdl;
 	if ( $self->force_wsdl_reload() ) {
-		delete($wsdl->{$file}) if exists($wsdl->{$file});
+		delete($self->wsdl->{$file}) if exists($self->wsdl->{$file});
 		$self->force_wsdl_reload(0);
 	}
 	unless ( $self->_wsdl($file) ) {
 		return [];
 	}
-	my @ops = $wsdl->{$file}->operations(port=>$port);
+	my @ops = $self->wsdl->{$file}->operations(port=>$self->_get_port($file));
 	my @ret = ();
 	for my $op ( @ops ) {
 		push @ret, $op->name;
