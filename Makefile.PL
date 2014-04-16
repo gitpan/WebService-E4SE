@@ -8,13 +8,12 @@ WriteMakefile(
     AUTHOR           => q{Chase Whitener <cwhitener@gmail.com>},
     VERSION_FROM     => 'lib/WebService/E4SE.pm',
     ABSTRACT_FROM    => 'lib/WebService/E4SE.pm',
-    LICENSE          => 'Artistic_2_0',
-	META_MERGE   => {
-		requires  => {perl => '5.010001'},
+    LICENSE          => 'Artistic_2',
+    META_MERGE   => {
+        requires  => {perl => '5.010001'},
 		resources => {
 			homepage    => 'http://cwhitener.com',
 			license     => 'http://www.opensource.org/licenses/artistic-license-2.0',
-			# MailingList => 'http://groups.google.com/group/mojolicious',
 			repository  => 'http://github.com/genio/webservice-e4se',
 			bugtracker  => 'http://github.com/genio/webservice-e4se/issues'
 		},
@@ -41,6 +40,7 @@ WriteMakefile(
         'Moose' => 2.0,
         'MooseX::Types::Moose' => 0.2,
         'URI' => 1.6,
+        'namespace::autoclean' => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'WebService-E4SE-*' },

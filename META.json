@@ -6,7 +6,7 @@
    "dynamic_config" : 1,
    "generated_by" : "ExtUtils::MakeMaker version 6.84, CPAN::Meta::Converter version 2.133380",
    "license" : [
-      "unknown"
+      "artistic_2"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -45,6 +45,7 @@
             "XML::Compile::SOAP" : "2.38",
             "XML::Compile::WSDL11" : "2.38",
             "XML::LibXML" : "1.94",
+            "namespace::autoclean" : "0",
             "perl" : "5.010001"
          }
       }
@@ -62,5 +63,5 @@
          "url" : "http://github.com/genio/webservice-e4se"
       }
    },
-   "version" : "0.02"
+   "version" : "0.021"
 }

@@ -1,7 +1,9 @@
 use strict;
 use Test::More;
-eval "use Test::Pod::Coverage";
-plan skip_all => "Test::Pod::Coverage required for testing pod coverage" if $@;
+use Test::Pod::Coverage;
+
+plan skip_all => 'set TEST_POD to enable this test (developer only!)'
+	unless $ENV{TEST_POD};
 
 plan tests => 1;
 pod_coverage_ok( "WebService::E4SE" );

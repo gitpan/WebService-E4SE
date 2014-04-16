@@ -24,12 +24,12 @@ WebService::E4SE - Communicate with the various Epicor E4SE web services.
 
 =head1 VERSION
 
-Version 0.02
+Version 0.021
 
 =cut
 
 our $AUTHORITY = 'cpan:CAPOEIRAB';
-our $VERSION = '0.02';
+our $VERSION = '0.021';
 #$Carp::Verbose = 1;
 has useragent => (
 	is => 'ro',
@@ -304,11 +304,11 @@ sub _wsdl {
 
 Epicor's L<http://www.epicor.com/Products/Pages/E4SE.aspx> E4SE software
 uses a clunky, IE-only interface (just try to fill in your timesheet with
-a non-windows machine!  I dare ya!).
+a non-Windows machine!  I dare ya!).
 
 Each action on the software calls a SOAP-based web service API method.
 However, the APIs are not neatly packaged in one place (a la Salesforce, etc.).
-Also, there aren't any sessions. So, each call to the API must send username 
+Also, there aren't any sessions. So, each call to the API must send username
 and password credentials all over again (using NTLM).
 
 There are more than 100 web service files you could work with (.asmx extensions)
@@ -379,7 +379,7 @@ Default is an empty string.  This will be your domain password.  No attempt to h
 
 =item realm
 
-Default is an empty string.  Again, this is for the L<Authen::NTLM> module and can generally be left blank. 
+Default is an empty string.  Again, this is for the L<Authen::NTLM> module and can generally be left blank.
 
 =item site
 
@@ -503,12 +503,8 @@ Chase Whitener << <cwhitener at gmail.com> >>
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-webservice-e4se at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=WebService-E4SE>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
-
-
-
+Please report any bugs or feature requests on GitHub L<https://github.com/genio/webservice-e4se/issues>.
+I appreciate any and all criticism, bug reports, enhancements, or fixes.
 
 =head1 SUPPORT
 
@@ -521,9 +517,9 @@ You can also look for information at:
 
 =over 4
 
-=item * RT: CPAN's request tracker (report bugs here)
+=item * GitHub
 
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=WebService-E4SE>
+L<https://github.com/genio/webservice-e4se>
 
 =item * AnnoCPAN: Annotated CPAN documentation
 
